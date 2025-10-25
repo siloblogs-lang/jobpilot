@@ -1,0 +1,13 @@
+profile:
+  email: "DICE_EMAIL"
+  password: "DICE_PASSWORD"
+  full_name: "FULL_NAME"
+  first_name: "FIRST_NAME"
+  last_name: "LAST_NAME"
+  phone: "PHONE_NUMBER"
+  resume_path: "LOCAL_RESUME_PATH"
+  qa_answers:
+    work_auth: "Authorized to work in the U.S."
+    relocation: "Open"
+    desired_salary_min: "DESIRED_SALARY"
+    remote: true
