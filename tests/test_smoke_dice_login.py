@@ -1,28 +1,37 @@
-import os, time
+import os
 import pytest
 from dotenv import load_dotenv
 from jobpilot.browser.engine import build_driver
 from jobpilot.providers.dice.pages.login_page_email_submit import LoginPageEmailSubmit
 from jobpilot.providers.dice.pages.login_page_password_submit import LoginPagePasswordSubmit
+from jobpilot.providers.dice.pages.dashboard_page import DashboardPage
 
 def have_creds():
-    return bool(os.getenv("DICE_EMAIL"))
+    return bool(os.getenv("DICE_EMAIL") and os.getenv("DICE_PASSWORD"))
 
-@pytest.mark.skipif(not have_creds(), reason="DICE_EMAIL not set")
-def test_can_open_email_submit():
+@pytest.mark.skipif(not have_creds(), reason="DICE_EMAIL or DICE_PASSWORD not set")
+def test_can_login_and_land_on_dashboard():
     load_dotenv()
-    d = build_driver(headless=False)
+    driver = build_driver(headless=False)
     try:
-        email_submit_page = LoginPageEmailSubmit(d).open()
-        email_submit_page.login_email_submit(os.getenv("DICE_EMAIL"))
-        # Assert that browser navigates to password page
-        assert "/login/password" in d.current_url.lower()
+        # 1) email -> password
+        LoginPageEmailSubmit(driver).open().login_email_submit(os.getenv("DICE_EMAIL"))
+        assert "/login/password" in driver.current_url.lower()
+        
+        # 2) password -> dashboard
+        # returns DashboardPage and waits for it to load
+        LoginPagePasswordSubmit(driver).login_password_submit(os.getenv("DICE_PASSWORD"))
+ 
+        # 3) assert user online status text
+        # Check for logged in user
+        full_name = os.getenv("FULL_NAME")
+        expected_text = f"{full_name} is Online"
+        dashboard = DashboardPage(driver)
+        dashboard.wait_online_status_for(full_name)
 
-        password_submit_page = LoginPagePasswordSubmit(d)
-        password_submit_page.login_password_submit(os.getenv("DICE_PASSWORD"))
-        assert "/dashboard" in d.current_url.lower()
+        # verify the text 
+        actual_text = dashboard.online_status_text()
+        assert actual_text == expected_text, f"Expected '{expected_text}', got '{actual_text}'"
 
     finally:
-        time.sleep(30)
-        d.quit()
-# https://www.dice.com/home-feed - the page after user logs in
+        driver.quit()

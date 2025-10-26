@@ -13,7 +13,7 @@ class BasePage:
     def open(self, url: str | None = None):
         target = url or self.URL
         if not target:
-            raise ValueError("No URL provided and no URL attribte set on page")
+            raise ValueError("No URL provided and no URL attribute set on page")
         self.driver.get(target)
         return self  # chainable
 
