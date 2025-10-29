@@ -1,4 +1,5 @@
 import os, pytest
+import time
 from dotenv import load_dotenv
 from jobpilot.browser.engine import build_driver
 from jobpilot.providers.dice.pages.login_page_email_submit import LoginPageEmailSubmit
@@ -21,9 +22,18 @@ def test_search_with_date_worktype_filters():
     try:
         LoginPageEmailSubmit(driver).open().login_email_submit(login_email)
         LoginPagePasswordSubmit(driver).login_password_submit(password)
+        time.sleep(15)
         SearchPage(driver).open().search(keyword="QA Automation", location="Remote")
-        FiltersModal(driver).set_posted_date("Today")
-        FiltersModal(driver).set_work_settings(remote=True)
+        print("# Opening modal")
+        filters_modal = SearchPage(driver).open_filters()
+        filters_modal.wait_open()
+        filters_modal.set_posted_date("today")\
+            .set_work_settings(remote=True)\
+            .set_distance("10_miles")\
+            .apply_filters()
+        # FiltersModal(driver).set_posted_date("today")
+        # FiltersModal(driver).set_work_settings(remote=True)
+        # FiltersModal(driver).set_distance("10_miles")
         results = ResultsPage(driver).iterate_first_n(3)
         assert len(results) > 0
     finally:

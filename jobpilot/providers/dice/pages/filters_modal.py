@@ -5,7 +5,8 @@ from ..selectors import (FILTERS_PANEL, APPLY_FILTERS_BUTTON, EASY_APPLY_CHECKBO
                          CLEAR_FILTERS_BUTTON, CLOSE_FILTERS_BUTTON,
                          JOBS_POSTED_TODAY, JOBS_POSTED_THREE_DAYS, JOBS_POSTED_SEVEN_DAYS,
                          WORK_SETTING_REMOTE, WORK_SETTING_ONSITE, WORK_SETTING_HYBRID,
-                         FULL_TIME, CONTRACT, THIRD_PARTY, RESULTS_CONTAINER, RESULT_CARDS
+                         FULL_TIME, CONTRACT, THIRD_PARTY, RESULTS_CONTAINER, RESULT_CARDS,
+                         THIRTY_MILES_DISTANCE, TEN_MILES_DISTANCE, JOB_SEARCH_RESULTS,
                          )
 
 class FiltersModal(BasePage):
@@ -65,6 +66,18 @@ class FiltersModal(BasePage):
         self._set_checkbox(THIRD_PARTY, third_party)
         return self
     
+    # ----------- Distance ---------
+    def set_distance(self, key: str):
+        distance_mapping = {
+            "10_miles": TEN_MILES_DISTANCE,
+            "30_miles": THIRTY_MILES_DISTANCE
+        }
+
+        if key not in distance_mapping:
+            raise ValueError(f"Unknown posted_date key: {key}")
+        self._click_radio(distance_mapping[key])
+        return self
+
     # ---- Apply / Clear / Close -----
     def apply_filters(self):
         """ 
@@ -76,7 +89,7 @@ class FiltersModal(BasePage):
         self.wait.until(EC.invisibility_of_element_located(FILTERS_PANEL))
         # then wait for results to re-render
         self.visible(RESULTS_CONTAINER)
-        self.wait.until(EC.presence_of_all_elements_located(RESULT_CARDS))
+        self.wait.until(EC.presence_of_all_elements_located(JOB_SEARCH_RESULTS))
         return self
     
     def clear_filters(self):
