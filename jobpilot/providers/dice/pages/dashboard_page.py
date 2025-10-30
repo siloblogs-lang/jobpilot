@@ -2,7 +2,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from .base_page import BasePage
-from ..selectors import SHADOW_ROOT, HEADER_PROFILE_NAME, PROFILE_GREETING, USER_ONLINE_INDICATOR
+from ..selectors import SHADOW_ROOT, PROFILE_GREETING, USER_ONLINE_INDICATOR
 
 class DashboardPage(BasePage):
     def wait_loaded(self):

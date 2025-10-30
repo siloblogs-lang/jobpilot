@@ -3,29 +3,40 @@ from dotenv import load_dotenv
 from selenium.webdriver.common.by import By
 
 ##### LOGIN PAGES SELECTORS #####
-LOGIN_EMAIL = (By.CSS_SELECTOR, "input[name=\"email\"]") 
+LOGIN_EMAIL = (By.CSS_SELECTOR, "input[name='email']") 
 EMAIL_SUBMIT_BUTTON = (By.CSS_SELECTOR, "button[data-testid='sign-in-button']")
 
-LOGIN_PASSWORD = (By.CSS_SELECTOR, "input[name=\"password\"]")
+LOGIN_PASSWORD = (By.CSS_SELECTOR, "input[name='password']")
 PASSWORD_SUBMIT_BUTTON = (By.CSS_SELECTOR, "button[data-testid='submit-password']")
 
 ##### USER DASHBOARD SELECTORS #####
 ### Handle headers Shadow Root ###
 SHADOW_ROOT = (By.CSS_SELECTOR, "dhi-seds-nav-header")
-HEADER_PROFILE_NAME = (By.CSS_SELECTOR, "button.dropdown-button[aria-label^=\"User: \"]")
 PROFILE_GREETING = (By.CSS_SELECTOR, "h3[aria-label=\"Greeting\"]")
 ONLINE_STATUS_INDICATOR = (By.CSS_SELECTOR, "div[data-testid='online-status-indicator']")
 USER_ONLINE_INDICATOR = (By.CSS_SELECTOR, "span.sr-only")
 
 ##### SEARCH FUNCTIONALITY SELECTORS #####
 OPEN_FILTERS_PANEL = (By.XPATH, "//button[@type='button' and .//span[normalize-space()='All filters']]")
-SEARCH_KEYWORD_INPUT = (By.XPATH, "//input[@role='combobox' and @name='q' and normalize-space(@aria-label)='Job title, skill, company, keyword']")
-SEARCH_LOCATION_INPUT = (By.XPATH, "//input[@role='combobox' and @name='location' and normalize-space(@aria-label)='Location Field']")
-SEARCH_SUBMIT = (By.CSS_SELECTOR, "button[data-testid=\"job-search-search-bar-search-button\"]")
+# SEARCH_KEYWORD_INPUT = (By.XPATH, "//input[@role='combobox' and @name='q' and normalize-space(@aria-label)='Job title, skill, company, keyword']")
+SEARCH_KEYWORD_INPUT = (
+    By.CSS_SELECTOR,
+    "input[id*='search-field-keyword'], input[name='q'], input[aria-label*='job title' i], input[aria-label*='keyword' i]"
+)
+# SEARCH_LOCATION_INPUT = (By.XPATH, "//input[@role='combobox' and @name='location' and normalize-space(@aria-label)='Location Field']")
+SEARCH_LOCATION_INPUT = (
+    By.CSS_SELECTOR,
+    "input[id*='google-location-search'], input[name='location'], input[aria-label*='location' i]"
+)
+SEARCH_SUBMIT = (By.CSS_SELECTOR, "button[data-testid='job-search-search-bar-search-button']")
+
+###### FILTERS PANEL OPEN/CLOSE #####
 FILTERS_PANEL = (By.XPATH, "//div[contains(@class,'z-modal')][.//h2[normalize-space()='Filter Results']]")
-APPLY_FILTERS_BUTTON = (By.XPATH, "//div[contains(@class,'border-t')]//button[.//span[normalize-space()='Apply filters'] or normalize-space()='Apply filters']")
-CLEAR_FILTERS_BUTTON = (By.XPATH, "//div[contains(@class,'border-t')]//button[.//span[normalize-space()='Clear filters'] or normalize-space()='Clear filters']")
-CLOSE_FILTERS_BUTTON = (By.CSS_SELECTOR, "button[data-testid=\"undefined-close-button\"]")
+# APPLY_FILTERS_BUTTON = (By.XPATH, "//div[contains(@class,'border-t')]//button[.//span[normalize-space()='Apply filters'] or normalize-space()='Apply filters']")
+APPLY_FILTERS_BUTTON = (By.XPATH, "//button[normalize-space()='Apply filters']")
+# CLEAR_FILTERS_BUTTON = (By.XPATH, "//div[contains(@class,'border-t')]//button[.//span[normalize-space()='Clear filters'] or normalize-space()='Clear filters']")
+CLEAR_FILTERS_BUTTON = (By.XPATH, "//button[normalize-space()='Clear filters']")
+CLOSE_FILTERS_BUTTON = (By.CSS_SELECTOR, "button[data-testid='undefined-close-button']")
 
 ### Filters selectors ###
 JOBS_POSTED_TODAY = (By.CSS_SELECTOR, "input[name='postedDateOption'][value='ONE']")
@@ -45,18 +56,18 @@ DIRECT_HIRE = ()
 RECRUITER = ()
 
 ###### Search Reasults #######
-RESULTS_CONTAINER = (By.CSS_SELECTOR, "div[data-testid=\"job-search-results-container\"]")
+RESULTS_CONTAINER = (By.CSS_SELECTOR, "div[data-testid='job-search-results-container']")
 JOB_SEARCH_RESULTS = (By.XPATH, "//div[@role='list' and normalize-space(@aria-label)='Job search results']")
-RESULT_CARDS = (By.CSS_SELECTOR, "div[data-testid=\"job-search-job-card-link\"]")
+RESULT_CARDS = (By.CSS_SELECTOR, "div[data-testid='job-card']")
 EAST_APPLY_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normalize-space()='Easy Apply']]")
 APPLY_NOW_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normalize-space()='Apply Now']]")
 
 RESULT_TITLE = (By.CSS_SELECTOR, "a[data-testid=\"job-search-job-detail-link\"]")
-RESULT_COMPANY = (By.CSS_SELECTOR, "[data-cy='search-card-company']")
-RESULT_LINK = (By.CSS_SELECTOR, "a")
-EASY_APPLY_BADGE = (By.XPATH, ".//*[contains(., 'Easy Apply') or contains(., 'Quick Apply')]")
+RESULT_COMPANY = (By.CSS_SELECTOR, "//a[@aria-label='Company Logo']/following-sibling::a[1]")
+RESULT_LINK = (By.CSS_SELECTOR, "a[data-testid='job-search-job-detail-link']")
+EASY_APPLY_BADGE = (By.XPATH, "//a[contains(.,'Easy Apply')]")
 
-EAST_APPLY_BUTTON = (By.XPATH, "//button[contains(., 'Easy Apply') or contains(., 'Quick Apply')]")
+# EAST_APPLY_BUTTON = (By.XPATH, "//button[contains(., 'Easy Apply') or contains(., 'Quick Apply')]")
 UPLOAD_RESUME_INPUT = (By.CSS_SELECTOR, "input[type='file']")
 SUBMIT_APPLICATION = (By.XPATH, "//button[contains(., 'Submit') or contains(., 'Apply')]")
 CONFIRMATION_TOAST = (By.CSS_SELECTOR, "[role='alert'], .Toast, .notification")

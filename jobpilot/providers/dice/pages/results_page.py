@@ -6,8 +6,8 @@ from ..selectors import (RESULT_CARDS, RESULT_TITLE,
 
 class ResultsPage(BasePage):
     def _card(self):
-        self.wait.until(EC.presence_of_all_elements_located(JOB_SEARCH_RESULTS))
-        return self.driver.find_elements(*JOB_SEARCH_RESULTS)
+        self.wait.until(EC.presence_of_all_elements_located(RESULT_CARDS))
+        return self.driver.find_elements(*RESULT_CARDS)
     
     def _safe_text(self, we, by):
         elements = we.find_elements(*by)
@@ -22,11 +22,10 @@ class ResultsPage(BasePage):
         for card in self._card():
             print(card)
             out.append({
-                "title": card
-                # "title": self._safe_text(card, RESULT_TITLE),
-                # "company": self._safe_text(card, RESULT_COMPANY),
-                # "url": self._safe_href(card, RESULT_LINK),
-                # "easy_apply": bool(card.find_element(EASY_APPLY_BADGE))
+                "title": self._safe_text(card, RESULT_TITLE),
+                "company": self._safe_text(card, RESULT_COMPANY),
+                "url": self._safe_href(card, RESULT_LINK),
+                "easy_apply": bool(card.find_element(EASY_APPLY_BADGE))
             })
             print(out)    
             if len(out) >= n:

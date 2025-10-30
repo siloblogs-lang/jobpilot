@@ -7,6 +7,9 @@ from jobpilot.providers.dice.pages.login_page_password_submit import LoginPagePa
 from jobpilot.providers.dice.pages.search_page import SearchPage
 from jobpilot.providers.dice.pages.filters_modal import FiltersModal
 from jobpilot.providers.dice.pages.results_page import ResultsPage
+from jobpilot.utils.debug import dump_page
+
+
 
 # Creds
 login_email = os.getenv("DICE_EMAIL")
@@ -24,10 +27,9 @@ def test_search_with_date_worktype_filters():
         LoginPagePasswordSubmit(driver).login_password_submit(password)
         time.sleep(15)
         SearchPage(driver).open().search(keyword="QA Automation", location="Remote")
-        print("# Opening modal")
         filters_modal = SearchPage(driver).open_filters()
-        filters_modal.wait_open()
-        filters_modal.set_posted_date("today")\
+        filters_modal.wait_open()\
+            .set_posted_date("today")\
             .set_work_settings(remote=True)\
             .set_distance("10_miles")\
             .apply_filters()
@@ -36,5 +38,8 @@ def test_search_with_date_worktype_filters():
         # FiltersModal(driver).set_distance("10_miles")
         results = ResultsPage(driver).iterate_first_n(3)
         assert len(results) > 0
+    except Exception:
+        dump_page(driver)
+        raise
     finally:
         driver.quit()
