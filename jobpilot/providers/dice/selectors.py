@@ -33,9 +33,17 @@ SEARCH_SUBMIT = (By.CSS_SELECTOR, "button[data-testid='job-search-search-bar-sea
 ###### FILTERS PANEL OPEN/CLOSE #####
 FILTERS_PANEL = (By.XPATH, "//div[contains(@class,'z-modal')][.//h2[normalize-space()='Filter Results']]")
 # APPLY_FILTERS_BUTTON = (By.XPATH, "//div[contains(@class,'border-t')]//button[.//span[normalize-space()='Apply filters'] or normalize-space()='Apply filters']")
-APPLY_FILTERS_BUTTON = (By.XPATH, "//button[normalize-space()='Apply filters']")
+#APPLY_FILTERS_BUTTON = (By.XPATH, "//button[normalize-space()='Apply filters']")
+APPLY_FILTERS_BUTTON = (
+    By.XPATH,
+    "//button[.//span[normalize-space()='Apply filters'] and not(@disabled)]"
+)
 # CLEAR_FILTERS_BUTTON = (By.XPATH, "//div[contains(@class,'border-t')]//button[.//span[normalize-space()='Clear filters'] or normalize-space()='Clear filters']")
-CLEAR_FILTERS_BUTTON = (By.XPATH, "//button[normalize-space()='Clear filters']")
+#CLEAR_FILTERS_BUTTON = (By.XPATH, "//button[normalize-space()='Clear filters']")
+CLEAR_FILTERS_BUTTON = (
+    By.XPATH,
+    "//button[.//span[normalize-space()='Clear filters']]"
+)
 CLOSE_FILTERS_BUTTON = (By.CSS_SELECTOR, "button[data-testid='undefined-close-button']")
 
 ### Filters selectors ###
@@ -63,7 +71,8 @@ EAST_APPLY_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normal
 APPLY_NOW_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normalize-space()='Apply Now']]")
 
 RESULT_TITLE = (By.CSS_SELECTOR, "a[data-testid=\"job-search-job-detail-link\"]")
-RESULT_COMPANY = (By.CSS_SELECTOR, "//a[@aria-label='Company Logo']/following-sibling::a[1]")
+# RESULT_COMPANY = (By.CSS_SELECTOR, "//a[@aria-label='Company Logo']/following-sibling::a[1]")
+RESULT_COMPANY = (By.XPATH, ".//span[contains(@class,'logo')]//a[p]/p")
 RESULT_LINK = (By.CSS_SELECTOR, "a[data-testid='job-search-job-detail-link']")
 EASY_APPLY_BADGE = (By.XPATH, "//a[contains(.,'Easy Apply')]")
 

@@ -1,7 +1,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import ElementNotInteractableException
+from selenium.common.exceptions import ElementNotInteractableException, ElementClickInterceptedException
 from .base_page import BasePage
 from ..selectors import (FILTERS_PANEL, APPLY_FILTERS_BUTTON, EASY_APPLY_CHECKBOX,
                          CLEAR_FILTERS_BUTTON, CLOSE_FILTERS_BUTTON,
@@ -112,7 +112,22 @@ class FiltersModal(BasePage):
         Click 'Apply filters' and wait for model to close and results to refresh    
         """
 
-        self.click(APPLY_FILTERS_BUTTON)
+        apply_filters_button = self.wait.until(EC.presence_of_element_located(APPLY_FILTERS_BUTTON))
+
+        # scroll into view to avoid "not interactable"
+        try:
+            self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", apply_filters_button)
+        except Exception:
+            pass
+
+        # Try normal click 1st if selenium complains ues JS click
+        try:
+            if apply_filters_button.is_enabled():
+                apply_filters_button.click()
+            else: 
+                self.driver.execute_script("arguments[0].click()", apply_filters_button)
+        except (ElementClickInterceptedException, ElementNotInteractableException):
+            self.driver.execute_script("arguments[0].click()", apply_filters_button)
         # wait until modal disappears
         try:
             self.wait.until(EC.invisibility_of_element_located(FILTERS_PANEL))

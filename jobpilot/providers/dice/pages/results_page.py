@@ -25,7 +25,7 @@ class ResultsPage(BasePage):
                 "title": self._safe_text(card, RESULT_TITLE),
                 "company": self._safe_text(card, RESULT_COMPANY),
                 "url": self._safe_href(card, RESULT_LINK),
-                "easy_apply": bool(card.find_element(EASY_APPLY_BADGE))
+                #"easy_apply": bool(card.find_element(EASY_APPLY_BADGE))
             })
             print(out)    
             if len(out) >= n:
