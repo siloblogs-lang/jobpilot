@@ -27,8 +27,12 @@ id_rsa
 id_ed25519
 *.keystore
 *.jks
+.secrets/
 
 # OS/Editors
 .DS_Store
 .idea/
 .vscode/
+
+# Helper dev code
+dev_scripts/
