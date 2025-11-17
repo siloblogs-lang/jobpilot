@@ -80,3 +80,10 @@ EASY_APPLY_BADGE = (By.XPATH, "//a[contains(.,'Easy Apply')]")
 UPLOAD_RESUME_INPUT = (By.CSS_SELECTOR, "input[type='file']")
 SUBMIT_APPLICATION = (By.XPATH, "//button[contains(., 'Submit') or contains(., 'Apply')]")
 CONFIRMATION_TOAST = (By.CSS_SELECTOR, "[role='alert'], .Toast, .notification")
+
+######## Job Details Page ######
+JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[class^='job-detail-description-module__'][class$='__jobDescription']")
+# The xpath version for backup
+# JOB_DESCRIPTION_CONTAINER = (By.XPATH,  "//h3[normalize-space()='Summary']/following::div"
+#     "[contains(@class,'job-detail-description-module')][1]")
+

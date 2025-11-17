@@ -37,6 +37,7 @@ def test_search_with_date_worktype_filters():
         # FiltersModal(driver).set_work_settings(remote=True)
         # FiltersModal(driver).set_distance("10_miles")
         results = ResultsPage(driver).iterate_first_n(3)
+        print(results)
         assert len(results) > 0
     except Exception:
         dump_page(driver)
