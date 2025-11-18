@@ -2,7 +2,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 from .base_page import BasePage
-from ..selectors import JOB_DESCRIPTION_CONTAINER
+from ..selectors import JOB_DESCRIPTION_CONTAINER, JOB_DESCRIPTION_TOGGLE_BUTTON
 
 class JobDetailPage(BasePage):
     """
@@ -25,7 +25,25 @@ class JobDetailPage(BasePage):
             self.wait.until(EC.presence_of_element_located(JOB_DESCRIPTION_CONTAINER))
 
         return self
-    
+
+    def toggle_open_description(self) -> "JobDetailPage":
+        try:
+            description_toggle_button = self.visible(JOB_DESCRIPTION_TOGGLE_BUTTON).click()
+        except Exception:
+            try:
+                description_toggle_button = self.wait.until(
+                    EC.presence_of_element_located(JOB_DESCRIPTION_TOGGLE_BUTTON)
+                )
+            except TimeoutException:
+                return self
+            
+        try: 
+            description_toggle_button.click()
+        except Exception:
+            pass
+
+        return self
+
     def get_description_text(self) -> str:
         """
         Extract the full job description text.

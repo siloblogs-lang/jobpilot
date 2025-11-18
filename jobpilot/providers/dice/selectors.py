@@ -82,7 +82,9 @@ SUBMIT_APPLICATION = (By.XPATH, "//button[contains(., 'Submit') or contains(., '
 CONFIRMATION_TOAST = (By.CSS_SELECTOR, "[role='alert'], .Toast, .notification")
 
 ######## Job Details Page ######
-JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[class^='job-detail-description-module__'][class$='__jobDescription']")
+JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[data-testid='jobDescription']")
+JOB_DESCRIPTION_TOGGLE_BUTTON = (By.CSS_SELECTOR, "button[id='descriptionToggle']")
+# JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[class^='job-detail-description-module__'][class$='__jobDescription']")
 # The xpath version for backup
 # JOB_DESCRIPTION_CONTAINER = (By.XPATH,  "//h3[normalize-space()='Summary']/following::div"
 #     "[contains(@class,'job-detail-description-module')][1]")

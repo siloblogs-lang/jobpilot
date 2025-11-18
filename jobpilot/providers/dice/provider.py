@@ -10,6 +10,8 @@ from jobpilot.providers.dice.pages.login_page_password_submit import LoginPagePa
 from jobpilot.providers.dice.pages.search_page import SearchPage
 from jobpilot.providers.dice.pages.results_page import ResultsPage
 from jobpilot.providers.dice.pages.dashboard_page import DashboardPage
+from jobpilot.providers.dice.pages.job_detail_page import JobDetailPage
+
 
 class DiceProvider(BaseProvider):
     """
@@ -70,6 +72,17 @@ class DiceProvider(BaseProvider):
 
         return jobs
     
+    def get_job_description(self, job: JobPosting) -> str:
+        """
+        Open a job detail page and return the normalized description text.
+
+        This is a thin wrapper around the Dice JobDetailPage, so that
+        the orchestrator doesn't need to know about Dice DOM details.
+        """
+        page = JobDetailPage(self.driver).open(job.url)
+        page.toggle_open_description()
+        return page.get_description_text()
+
     def is_easy_apply(self, job: JobPosting) -> bool:
         return bool(job.easy_apply())
     
@@ -80,7 +93,6 @@ class DiceProvider(BaseProvider):
             notes="Apply() not implemented yet for DiceProvoder"
         )
         
-
     def open_job(self, job):
         self.driver.get(job.url)
 

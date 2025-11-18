@@ -7,4 +7,4 @@ oauth2client
 tenacity
 pytest
 pytest-reporter-html1
-
+openai
