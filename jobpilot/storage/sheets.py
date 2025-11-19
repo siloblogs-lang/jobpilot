@@ -118,6 +118,18 @@ class SheetsClient:
         location = job.location or (job.metadata.get("location") if job.metadata else "")
         raw_metadata = json.dumps(job.metadata or {}, ensure_ascii=False)
 
+        # Read job application status, match percentage from matadata
+        metadata = job.metadata or {} 
+
+        match_percent = metadata.get("match_percent", "")
+        applied = metadata.get("applied", "")
+        applied_at = metadata.get("applied_at", "")
+        status_notes = (
+            metadata.get("application_status_notes")
+            or metadata.get("match_reasons")
+            or ""
+        )
+
         # Match HEADERS:
         return [
             job.id,
@@ -128,10 +140,10 @@ class SheetsClient:
             job.url,
             job.easy_apply,
             created_iso,
-            "",          # match_percent (empty for now)
-            "",          # applied
-            "",          # applied_at
-            "",          # application_status_notes
+            match_percent,          # match_percent (empty for now)
+            applied,          # applied
+            applied_at,          # applied_at
+            status_notes,          # application_status_notes
             raw_metadata,
         ]
     

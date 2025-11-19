@@ -45,7 +45,7 @@ class DiceProvider(BaseProvider):
         LoginPagePasswordSubmit(self.driver).login_password_submit(password)
         DashboardPage(self.driver).wait_loaded()
 
-    def search(self, max_results: int=100) -> List(JobPosting):
+    def search(self, max_results: int=100) -> List[JobPosting]:
         """
          Perform a search and return JobPosting objects
 

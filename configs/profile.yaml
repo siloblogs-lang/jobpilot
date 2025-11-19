@@ -5,7 +5,7 @@ profile:
   first_name: "FIRST_NAME"
   last_name: "LAST_NAME"
   phone: "PHONE_NUMBER"
-  resume_path: "LOCAL_RESUME_PATH"
+  resume_path: "LOCAL_RESUME_PATH_TXT"
   qa_answers:
     work_auth: "Authorized to work in the U.S."
     relocation: "Open"
