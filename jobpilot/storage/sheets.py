@@ -163,3 +163,36 @@ class SheetsClient:
 
         # gspread's append_rows is efficiant for batch inserts
         ws.append_rows(rows, value_input_option="USER_ENTERED")
+
+    def iter_jobs(self, sheet_name: str):
+        """
+        Yield (row_index, row_values) for all rows after the header.
+        row_index is 1-based (Google Sheets style).
+        """
+        ws = self.ensure_sheet_exists(sheet_name)
+        all_values = ws.get_all_values()
+
+        # row 1 is header
+        for idx in range(2, len(all_values) + 1):
+            yield idx, all_values[idx - 1]
+
+    def update_fields(self, sheet_name: str, row_index: int, fields: dict[str, str]) -> None:
+        """
+        Update specific columns in a row, using HEADERS to map keys → columns.
+        `fields` keys must be among: "match_percent", "applied", "applied_at", "application_status_notes".
+        """
+
+        ws = self.ensure_sheet_exists(sheet_name)
+
+        # Map header name -> column index (1-based)
+        headers = ws.row_values(1)
+        update = []
+        for key, value in fields.items():
+            if key not in headers:
+                continue
+            col_idx = headers.index(key) + 1
+            update.append((row_index, col_idx, value))
+
+        # Perform the updates
+        for row, col, val in update:
+            ws.update_cell(row, col, val)

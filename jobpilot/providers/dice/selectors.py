@@ -67,7 +67,7 @@ RECRUITER = ()
 RESULTS_CONTAINER = (By.CSS_SELECTOR, "div[data-testid='job-search-results-container']")
 JOB_SEARCH_RESULTS = (By.XPATH, "//div[@role='list' and normalize-space(@aria-label)='Job search results']")
 RESULT_CARDS = (By.CSS_SELECTOR, "div[data-testid='job-card']")
-EAST_APPLY_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normalize-space()='Easy Apply']]")
+EASY_APPLY_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normalize-space()='Easy Apply']]")
 APPLY_NOW_BUTTON = (By.XPATH, "//div[@data-testid='job-card']//a[.//span[normalize-space()='Apply Now']]")
 
 RESULT_TITLE = (By.CSS_SELECTOR, "a[data-testid=\"job-search-job-detail-link\"]")
@@ -84,8 +84,34 @@ CONFIRMATION_TOAST = (By.CSS_SELECTOR, "[role='alert'], .Toast, .notification")
 ######## Job Details Page ######
 JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[data-testid='jobDescription']")
 JOB_DESCRIPTION_TOGGLE_BUTTON = (By.CSS_SELECTOR, "button[id='descriptionToggle']")
+JOB_DESCRIPTION_EASY_APPLY_BUTTON = (By.XPATH, "//button[contains(., 'Easy apply')]")
+JOB_DESCRIPTION_APPLY_NOW_BUTTON = (By.XPATH, "//button[contains(., 'Apply now')]")
+
 # JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[class^='job-detail-description-module__'][class$='__jobDescription']")
 # The xpath version for backup
 # JOB_DESCRIPTION_CONTAINER = (By.XPATH,  "//h3[normalize-space()='Summary']/following::div"
 #     "[contains(@class,'job-detail-description-module')][1]")
+
+####### Easy Apply Steps #######
+# --- Step 1: Resume & Cover letter page ----
+EASY_APPLY_STEP1_CONTAINER = (By.CSS_SELECTOR, 'main.step-one')
+EASY_APPLY_RESUME_REPLACE_BUTTON = (By.CSS_SELECTOR, ".resume-container .file-wrapper .file-remove")
+EASY_APPLY_STEP1_NEXT_BUTTON = (By.CSS_SELECTOR, "main.step-one .navigation-buttons .btn-next")
+
+# --- Step 2: Review and Submit
+EASY_APPLY_STEP2_CONTAINER = (By.CSS_SELECTOR, "main.step-four")
+EASY_APPLY_REVIEW_RESUME_HEADER = (By.CSS_SELECTOR, "section.resume-review-section h2")
+EASY_APPLY_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main.step-four .navigation-buttons .btn-next")
+
+# Generic will need updating 
+EASY_APPLY_RESUME_FILE_INPUT = (By.CSS_SELECTOR, ".resume-container input[type='file']") 
+
+# ---- Step 3: Confirmation page
+EASY_APPLY_CONFIRMATION_CONTAINER = (By.CSS_SELECTOR, "header.post-apply-banner")
+EASY_APPLY_SUBMITTED_HEADER = (By.CSS_SELECTOR, "header.post-apply-banner h1")
+
+
+APPLYING_FOR_HEADER = (By.CSS_SELECTOR, "div[class='job-card-wc']")
+APPLYING_NEXT_BUTTON = (By.XPATH, "//button[@class,'btn-next']//span[contains(., 'Next')]")
+APPLYING_SUBMIT_BUTTON = (By.XPATH, "//button[@class,'btn-next']//span[contains(., 'Submit')]")
 

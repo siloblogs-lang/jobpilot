@@ -1,5 +1,6 @@
 from __future__ import annotations
-import os
+import os 
+from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import List
 
@@ -70,7 +71,8 @@ class JobPilotRunner:
             resume_text = self._load_resume_text()
             matcher = JobMatcher(resume_text=resume_text)
 
-            score_jobs: List[JobPosting] = []
+            # 1. Append scored jobs
+            scored_jobs: List[JobPosting] = []
 
             for job in jobs:
                 desc = provider.get_job_description(job)
@@ -83,12 +85,52 @@ class JobPilotRunner:
                 md["match_reasons"] = match_result.reasons
                 job.metadata = md
 
-                score_jobs.append(job)
+                scored_jobs.append(job)
 
             # use repo to select correct sheet and write
-            self.repo.save_jobs(provider.NAME, score_jobs)
+            self.repo.save_jobs(provider.NAME, scored_jobs)
 
-            return score_jobs
+            # 2. Decide apply vs skip + record application status
+            for job in scored_jobs:
+                match_percent = float(job.metadata.get("match_percent", 0.0))
+                recommended = bool(job.metadata.get("recommended", False))
+
+                # Default: skipped, log why
+                applied = "No"
+                notes = f"Only {match_percent}% match. Match score is too low."
+
+                result = None
+
+                if recommended and job.easy_apply:
+                    # Call provider.apply()
+                    result = provider.apply(job)
+                    now_iso = datetime.now(timezone.utc).isoformat()
+                    
+                    applied = "Yes" if result.status == "APPLIED" else "No"
+                    notes = result.notes or f"Apply status: {result.status}"
+                    self.repo.update_job_status(
+                        job,
+                        match_percent=match_percent,
+                        applied=applied,
+                        applied_at=now_iso if applied == "Yes" else "",
+                        notes=notes,
+                    )
+                else:
+                    # Not recomened (low match %) OR not Easy Apply
+                    reason = []
+                    if not recommended:
+                        reason.append("match below threshold")
+                    if not job.easy_apply:
+                        reason.append("Not Easy Apply")
+                    notes = "; ".join(reason)
+
+                    self.repo.update_job_status(
+                        job, 
+                        match_percent=match_percent,
+                        applied="No",
+                        notes=notes
+                    )
+                return scored_jobs
 
         finally:
             driver.quit()    

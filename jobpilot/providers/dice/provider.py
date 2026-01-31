@@ -87,12 +87,54 @@ class DiceProvider(BaseProvider):
         return bool(job.easy_apply())
     
     def apply(self, job: JobPosting) -> ApplyResult:
-        return ApplyResult(
-            status="SKIPPED",
-            app_id=None,
-            notes="Apply() not implemented yet for DiceProvoder"
-        )
-        
+        """
+        Minimal Easy Apply flow for Dice.
+
+        Assumes:
+        - We already decided this job is a good match.
+        - job.easy_apply is True.
+        """
+        try:
+            # 1. Open job detail page
+            detail_page = JobDetailPage(self.driver).open(job.url)
+            detail_page.wait_loaded()
+
+            # 2. click 'Easy apply' => navigates to apply Step 1
+            form_page = detail_page.click_easy_apply()
+            form_page.wait_step1_loaded()
+
+            # TODO: if you want to always replace resume here, wire in resume_path
+            # from profile cfg and call form_page.replace_resume(resume_path)
+            #
+            # For now, we assume the correct resume is already attached on Dice profile.
+            
+            # 3. Step 1 of application -> Cick Next button
+            form_page.click_next_step()
+            form_page.wait_step2_loaded()
+
+            # 4. Wait for confirmation page
+            ok = form_page.wait_submission_confirmation()
+            success = ok and form_page.is_submission_successful()
+
+            if success:
+                return ApplyResult(
+                    status="APPLIED",
+                    app_id=None,
+                    notes="Applied via Easy Apply."
+                )
+            else:
+                return ApplyResult(
+                    status="ERROR",
+                    app_id=None,
+                    notes="Easy Apply flow finished but confirmation banner was not detected"
+                )
+        except Exception as e:
+            return ApplyResult(
+                status="ERROR",
+                app_id=None,
+                notes=f"Exception during Easy apply: {e}"
+            )
+
     def open_job(self, job):
         self.driver.get(job.url)
 
