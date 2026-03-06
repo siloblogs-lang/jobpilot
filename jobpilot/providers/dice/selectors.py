@@ -82,9 +82,14 @@ SUBMIT_APPLICATION = (By.XPATH, "//button[contains(., 'Submit') or contains(., '
 CONFIRMATION_TOAST = (By.CSS_SELECTOR, "[role='alert'], .Toast, .notification")
 
 ######## Job Details Page ######
-JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[data-testid='jobDescription']")
+# Old container before Dice UI updates
+# JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[data-testid='jobDescription']")
+# Updated container selector 
+JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div.job-detail-description-module__EJDWFq__jobDescription",)
 JOB_DESCRIPTION_TOGGLE_BUTTON = (By.CSS_SELECTOR, "button[id='descriptionToggle']")
-JOB_DESCRIPTION_EASY_APPLY_BUTTON = (By.XPATH, "//button[contains(., 'Easy apply')]")
+# Updated Easy Apply button
+# JOB_DESCRIPTION_EASY_APPLY_BUTTON = (By.XPATH, "//button[contains(., 'Easy apply')]")
+JOB_DESCRIPTION_EASY_APPLY_BUTTON = (By.CSS_SELECTOR, "[data-testid='apply-button']")
 JOB_DESCRIPTION_APPLY_NOW_BUTTON = (By.XPATH, "//button[contains(., 'Apply now')]")
 
 # JOB_DESCRIPTION_CONTAINER = (By.CSS_SELECTOR, "div[class^='job-detail-description-module__'][class$='__jobDescription']")
@@ -94,14 +99,18 @@ JOB_DESCRIPTION_APPLY_NOW_BUTTON = (By.XPATH, "//button[contains(., 'Apply now')
 
 ####### Easy Apply Steps #######
 # --- Step 1: Resume & Cover letter page ----
-EASY_APPLY_STEP1_CONTAINER = (By.CSS_SELECTOR, 'main.step-one')
+# EASY_APPLY_STEP1_CONTAINER = (By.CSS_SELECTOR, 'main.step-one')
+EASY_APPLY_STEP1_CONTAINER = (By.XPATH, "//div[@role='progress' and @aria-label='Step 1 of 2']")
 EASY_APPLY_RESUME_REPLACE_BUTTON = (By.CSS_SELECTOR, ".resume-container .file-wrapper .file-remove")
-EASY_APPLY_STEP1_NEXT_BUTTON = (By.CSS_SELECTOR, "main.step-one .navigation-buttons .btn-next")
+# EASY_APPLY_STEP1_NEXT_BUTTON = (By.CSS_SELECTOR, "main.step-one .navigation-buttons .btn-next")
+# EASY_APPLY_STEP1_NEXT_BUTTON = (By.XPATH, "//form//button[@type='submit' and .//span[normalize-space() = 'Next']]")
+EASY_APPLY_STEP1_NEXT_BUTTON = (By.XPATH, "//button[@type='submit' and (.//*[normalize-space()='Next'] or normalize-space()='Next')]")
 
 # --- Step 2: Review and Submit
 EASY_APPLY_STEP2_CONTAINER = (By.CSS_SELECTOR, "main.step-four")
 EASY_APPLY_REVIEW_RESUME_HEADER = (By.CSS_SELECTOR, "section.resume-review-section h2")
-EASY_APPLY_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main.step-four .navigation-buttons .btn-next")
+# EASY_APPLY_SUBMIT_BUTTON = (By.CSS_SELECTOR, "main.step-four .navigation-buttons .btn-next")
+EASY_APPLY_SUBMIT_BUTTON = (By.XPATH, "//button[.//*[normalize-space()='Submit'] or normalize-space()='Submit']")
 
 # Generic will need updating 
 EASY_APPLY_RESUME_FILE_INPUT = (By.CSS_SELECTOR, ".resume-container input[type='file']") 

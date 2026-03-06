@@ -33,20 +33,34 @@ class JobDetailPage(BasePage):
         return self
 
     def toggle_open_description(self) -> "JobDetailPage":
-        try:
-            description_toggle_button = self.visible(JOB_DESCRIPTION_TOGGLE_BUTTON)
-        except Exception:
-            try:
-                description_toggle_button = self.wait.until(
-                    EC.presence_of_element_located(JOB_DESCRIPTION_TOGGLE_BUTTON)
-                )
-            except TimeoutException:
-                return self
+        """
+        Dice updated the UI: the description is now always visible under the
+        'Job Details' section, so there is no toggle button anymore.
+
+        We keep this method for backwards compatibility but just wait for
+        the description container to be present.
+        """
+        # try:
+        #     description_toggle_button = self.visible(JOB_DESCRIPTION_TOGGLE_BUTTON)
+        # except Exception:
+        #     try:
+        #         description_toggle_button = self.wait.until(
+        #             EC.presence_of_element_located(JOB_DESCRIPTION_TOGGLE_BUTTON)
+        #         )
+        #     except TimeoutException:
+        #         return self
             
+        # try: 
+        #     description_toggle_button.click()
+        # except Exception:
+        #     pass
+
+        ############### Updated funsctionality #########
+        # Just wait for the job description container to be visable
         try: 
-            description_toggle_button.click()
-        except Exception:
-            pass
+            self.visible(JOB_DESCRIPTION_CONTAINER)
+        except TimeoutException:
+            print("DEBUG: Job description container not visible (toggle is no-op in new UI).")
 
         return self
 
@@ -85,6 +99,7 @@ class JobDetailPage(BasePage):
                 EC.element_to_be_clickable(JOB_DESCRIPTION_EASY_APPLY_BUTTON)
             )
             button.click()
+            print("[Dice][JobDetailPage] Clicked Easy Apply successfully.")
         except TimeoutException:
             raise RuntimeError("Easy apply button did not appear/was not clickable")
         

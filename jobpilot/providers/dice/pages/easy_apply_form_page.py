@@ -40,7 +40,8 @@ class EasyApplyFormPage(BasePage):
         Wait till Step 1 container is visible
         """
         try:
-            self.wait.until(EC.visibility_of_element_located(EASY_APPLY_STEP1_CONTAINER))
+            # self.wait.until(EC.visibility_of_element_located(EASY_APPLY_STEP1_CONTAINER))
+            self.wait.until(EC.element_to_be_clickable(EASY_APPLY_STEP1_NEXT_BUTTON))
         except TimeoutException:
             # Looser fallback: visibility only
             self.wait.until(EC.presence_of_element_located(EASY_APPLY_STEP1_CONTAINER))
@@ -94,24 +95,32 @@ class EasyApplyFormPage(BasePage):
         """
         Click 'Next' to move to step 2
         """
-        btn = self.visible(EASY_APPLY_STEP1_NEXT_BUTTON)
-        btn.click()
+        # btn = self.visible(EASY_APPLY_STEP1_NEXT_BUTTON)
+        # btn.click()
+        print("[EasyApply] Clicking NEXT")
+
+        self._click_and_wait_stale(EASY_APPLY_STEP1_NEXT_BUTTON)
         return self
     
     # ------------ STEP 2: Review & Submit -------------
     def wait_step2_loaded(self, timeout: int = 15) -> "EasyApplyFormPage":
         try:
             # Wait on either the main container or a stable header.
-            self.wait.until(EC.visibility_of_element_located(EASY_APPLY_STEP2_CONTAINER))
-            self.wait.until(EC.visibility_of_element_located(EASY_APPLY_REVIEW_RESUME_HEADER))
+            # self.wait.until(EC.visibility_of_element_located(EASY_APPLY_STEP2_CONTAINER))
+            # self.wait.until(EC.visibility_of_element_located(EASY_APPLY_REVIEW_RESUME_HEADER))
+            print("[EasyApply] Waiting for STEP 2 (Submit button)")
+            # Wait for the visability of Submit button
+            self.wait.until(EC.visibility_of_element_located(EASY_APPLY_SUBMIT_BUTTON))
 
         except TimeoutException:
-            self.wait.until(EC.presence_of_element_located(EASY_APPLY_STEP2_CONTAINER))
+            self.wait.until(EC.presence_of_element_located(EASY_APPLY_SUBMIT_BUTTON))
         return self    
     
     def click_submit(self) -> "EasyApplyFormPage":
-        btn = self.visible(EASY_APPLY_SUBMIT_BUTTON)
-        btn.click()
+        # btn = self.visible(EASY_APPLY_SUBMIT_BUTTON)
+        # btn.click()
+        print("[EasyApply] Clicking SUBMIT")
+        self._click(EASY_APPLY_SUBMIT_BUTTON)
         return self
     
     # ------------- Application Confirmation Page --------------
@@ -141,3 +150,24 @@ class EasyApplyFormPage(BasePage):
             return "application submitted" in text
         except Exception:
             return False
+        
+    def _click(self, locator, timeout: int=15) -> None:
+        el = self.wait.until(EC.element_to_be_clickable(locator))
+        self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
+        try:
+            el.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", el)
+
+
+    def _click_and_wait_stale(self, locator, timeout: int = 15) -> None:
+        el = self.wait.until(EC.element_to_be_clickable(locator))
+        self.driver.execute_script("arguments[0].scrollIntoView({block:'center'});", el)
+
+        try:
+            el.click()
+        except Exception:
+            self.driver.execute_script("arguments[0].click();", el)
+
+        # Key difference vs _click(): wait for the element to become stale
+        self.wait.until(EC.staleness_of(el))

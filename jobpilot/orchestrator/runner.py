@@ -94,6 +94,7 @@ class JobPilotRunner:
             for job in scored_jobs:
                 match_percent = float(job.metadata.get("match_percent", 0.0))
                 recommended = bool(job.metadata.get("recommended", False))
+                print(f"[Runner] job={job.id} easy_apply={job.easy_apply} recommended={recommended} match={match_percent}")
 
                 # Default: skipped, log why
                 applied = "No"
@@ -102,12 +103,15 @@ class JobPilotRunner:
                 result = None
 
                 if recommended and job.easy_apply:
+                    print(f"[Runner] APPLYING => {job.id} {job.title} | {job.url}")
                     # Call provider.apply()
                     result = provider.apply(job)
                     now_iso = datetime.now(timezone.utc).isoformat()
                     
                     applied = "Yes" if result.status == "APPLIED" else "No"
                     notes = result.notes or f"Apply status: {result.status}"
+
+                    print("Updating sheet for", job.id, "applied=", applied)
                     self.repo.update_job_status(
                         job,
                         match_percent=match_percent,
@@ -115,7 +119,9 @@ class JobPilotRunner:
                         applied_at=now_iso if applied == "Yes" else "",
                         notes=notes,
                     )
+                    print("Updated sheet OK for", job.id)
                 else:
+                    print(f"[Runner] SKIP => {job.id} recommended={recommended} easy_apply={job.easy_apply}")
                     # Not recomened (low match %) OR not Easy Apply
                     reason = []
                     if not recommended:
@@ -124,13 +130,14 @@ class JobPilotRunner:
                         reason.append("Not Easy Apply")
                     notes = "; ".join(reason)
 
+                    print("Updating sheet for", job.id, "applied=", applied)
                     self.repo.update_job_status(
                         job, 
                         match_percent=match_percent,
                         applied="No",
                         notes=notes
                     )
-                return scored_jobs
+            return scored_jobs
 
         finally:
             driver.quit()    

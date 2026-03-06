@@ -29,13 +29,14 @@ class JobRepo:
 
     def _find_row_index_by_job_id(self, provider:  str, job_id: str) -> int | None:
         sheet_name = self._sheet_name_for_provider(provider)
+        last_match = None
         for row_idx, row_values in self._client.iter_jobs(sheet_name):
             # HEADER: ["id", "provider", "title", ...]
             if not row_values:
                 continue
             if row_values[0] == job_id:
-                return row_idx
-        return None
+                last_match = row_idx
+        return last_match
     
     def update_job_status(
             self, 
@@ -49,6 +50,7 @@ class JobRepo:
         row_idx = self._find_row_index_by_job_id(job.provider, job.id)
         if row_idx is None:
             # Row not found; log or skip quitly
+            raise RuntimeError(f"Could not find job row in sheet for id={job.id}")
             return
         
         fields: dict[str, str] = {}
