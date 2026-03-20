@@ -59,19 +59,56 @@ class DiceProvider(BaseProvider):
         keywords = self.search_cfg.get("keywords") or []
         locations = self.search_cfg.get("locations") or []
 
+        print(f"[All Search terms]=> {keywords}")
+        print(f"[All locations]=> {locations}")
+
         if not keywords or not locations:
             raise RuntimeError("No keyword or locations configured for search")
         
-        keyword = keywords[0]
-        location = locations[0]
+        all_jobs: List[JobPosting] = []
+        seen_ids = set()
 
-        search_page = SearchPage(self.driver).open()
-        search_page.search(keyword=keyword, location=location)
+        for keyword in keywords:
+            for location in locations:
 
-        results_page = ResultsPage(self.driver)
-        jobs = results_page.iterate_all(max_results=max_results)
+                remaining = max_results - len(all_jobs)
+                if remaining <= 0:
+                    return all_jobs
+                print(f"[DiceProvider.search] => Processing {keyword} + {location}")
+                search_page = SearchPage(self.driver).open()
+                search_page.search(keyword=keyword, location=location)
 
-        return jobs
+                results_page = ResultsPage(self.driver)
+                jobs = results_page.iterate_all(max_results=remaining)
+                print(f"[DiceProvider.search] => Found {len(jobs)} jobs for {keyword} + {location}")
+                for job in jobs:
+                    if job.id in seen_ids:
+                        continue
+
+                    md = dict(job.metadata or {})
+                    md["search_keyword"] = keyword
+                    md["search_location"] = location
+                    job.metadata = md
+
+                    all_jobs.append(job)
+                    seen_ids.add(job.id)
+
+                    if len(all_jobs) >= max_results:
+                        return all_jobs
+                print(f"[DiceProvider.search] => Total collected so far = {len(all_jobs)}")
+        return all_jobs
+        
+        # Legacy logic relplaced the nested 'for loop' above
+        # keyword = keywords[0]
+        # location = locations[0]
+
+        # search_page = SearchPage(self.driver).open()
+        # search_page.search(keyword=keyword, location=location)
+
+        # results_page = ResultsPage(self.driver)
+        # jobs = results_page.iterate_all(max_results=max_results)
+
+        # return jobs
     
     def get_job_description(self, job: JobPosting) -> str:
         """

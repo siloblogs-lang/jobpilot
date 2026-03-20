@@ -74,7 +74,7 @@ RESULT_TITLE = (By.CSS_SELECTOR, "a[data-testid=\"job-search-job-detail-link\"]"
 # RESULT_COMPANY = (By.CSS_SELECTOR, "//a[@aria-label='Company Logo']/following-sibling::a[1]")
 RESULT_COMPANY = (By.XPATH, ".//span[contains(@class,'logo')]//a[p]/p")
 RESULT_LINK = (By.CSS_SELECTOR, "a[data-testid='job-search-job-detail-link']")
-EASY_APPLY_BADGE = (By.XPATH, "//a[contains(.,'Easy Apply')]")
+EASY_APPLY_BADGE = (By.XPATH, ".//a[contains(.,'Easy Apply')]")
 
 # EAST_APPLY_BUTTON = (By.XPATH, "//button[contains(., 'Easy Apply') or contains(., 'Quick Apply')]")
 UPLOAD_RESUME_INPUT = (By.CSS_SELECTOR, "input[type='file']")
