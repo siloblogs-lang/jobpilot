@@ -13,6 +13,7 @@ def load_configs(profile_path="configs/profile.yaml", searches_path="configs/sea
         "DICE_PASSWORD": os.getenv("DICE_PASSWORD"),
         "GOOGLE_SA_JSON": os.getenv("GOOGLE_SA_JSON"),
         "SHEETS_SPREADSHEET_NAME": os.getenv("SHEETS_SPREADSHEET_NAME", "JobPilot"),
+        "SPREADSHEET_SHEET_NAME": os.getenv("SPREADSHEET_SHEET_NAME")
     }
     cfg["profile"]  = _read_yaml(profile_path).get("profile", {})
     cfg.update(_read_yaml(searches_path))   # adds `dice:` block, etc.

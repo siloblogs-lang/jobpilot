@@ -140,6 +140,17 @@ class DiceProvider(BaseProvider):
             detail_page = JobDetailPage(self.driver)
             detail_page.wait_loaded()
 
+            # 2_a) Validate Apply button text is not "Applied"
+            btn_text = detail_page.get_easy_apply_button_text()
+            print(f"[DiceProvider.appy] button text => {btn_text!r}")
+
+            if detail_page.is_already_applied():
+                return ApplyResult(
+                    status="SKIPPED",
+                    app_id=None,
+                    notes=f"Job already applied on Dice. Button text: {btn_text}"
+                )
+
             # 3) Click Apply/Easy Apply -> Step 1
             form_page = detail_page.click_easy_apply()
 

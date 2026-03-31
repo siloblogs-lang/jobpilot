@@ -1,5 +1,9 @@
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    StaleElementReferenceException,
+)
 
 from .base_page import BasePage
 from ..selectors import (
@@ -86,6 +90,20 @@ class JobDetailPage(BasePage):
         # Normalize whitespace (collapse multiple spaces/newlines)
         return " ".join(raw_text.split())
     
+    # Varify we didnt apply for the job yet
+    def get_easy_apply_button_text(self) -> str:
+        try:
+            btn = self.wait.until(EC.presence_of_element_located(JOB_DESCRIPTION_EASY_APPLY_BUTTON))
+            return btn.text.strip()
+        except (NoSuchElementException, StaleElementReferenceException, TimeoutException):
+            return ""
+        
+    def is_already_applied(self) -> bool:
+        text = self.get_easy_apply_button_text().strip().lower()
+        return text in {
+            "applied" ,
+        }
+
     def click_easy_apply(self, timeout: int = 10) -> "EasyApplyFormPage":
         """
         Click the 'Easy apply' button on the job detail page.

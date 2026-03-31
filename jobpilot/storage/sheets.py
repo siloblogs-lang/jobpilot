@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json, os, gspread
+import gspread.utils
 from dataclasses import asdict
 from datetime import datetime, timezone
 from typing import List
@@ -72,6 +73,11 @@ class SheetsClient:
         creds = _load_service_account_credentials(sa_json_path=sa_json_path)
         self._gc = gspread.authorize(creds)
         self._spreadsheet = self._get_spreadsheet()
+        self._default_sheet_name = env_cfg.get("SPREADSHEET_SHEET_NAME")
+
+        # Cache worksheet + headers
+        self._worksheet_cache: dict[str, gspread.Worksheet] = {}
+        self._header_cache: dict[str, list[str]] = {}
 
     def _get_spreadsheet(self):
         """ Open spreadsheet by name, or create it if it doesn't exist"""
@@ -85,14 +91,20 @@ class SheetsClient:
         Ensure there's a worksheet with the given name and correct HEADERS.
         If it doesn't exist, create it and set headers in the first row.
         """
+        if sheet_name in self._worksheet_cache:
+            return self._worksheet_cache[sheet_name]
+        
         try: 
             ws = self._spreadsheet.worksheet(sheet_name)
         except gspread.WorksheetNotFound:
             ws = self._spreadsheet.add_worksheet(
                 title=sheet_name, 
                 rows="1000",
-                cols=str(len(HEADERS)))
+                cols=str(len(HEADERS))
+            )
             ws.append_row(HEADERS)
+            self._worksheet_cache[sheet_name] = ws
+            self._header_cache[sheet_name] = HEADERS
             return ws
         
         # if worksheet exists verify headers 
@@ -106,6 +118,8 @@ class SheetsClient:
                 f"Worksheet '{sheet_name}' exists but headers differ\n"
                 f"Expected: {HEADERS}\nGot: {existing}"
             )
+        self._worksheet_cache[sheet_name] = ws
+        self._header_cache[sheet_name] = existing
         return ws
 
     @staticmethod
@@ -147,7 +161,15 @@ class SheetsClient:
             raw_metadata,
         ]
     
-    def append_jobs(self, sheet_name: str, jobs: List[JobPosting]) -> None:
+    @property
+    def default_sheet_name(self) -> str:
+        return self._default_sheet_name
+
+    def headers_for_sheet(self, sheet_name: str) -> list[str]:
+        ws = self.ensure_sheet_exists(sheet_name)
+        return ws.row_values(1)
+    
+    def append_jobs(self, sheet_name: str, jobs: List[JobPosting]) -> dict[str, int]:
         """
         Append a list of JobPosting objects as rows to the given worksheet.
 
@@ -155,14 +177,20 @@ class SheetsClient:
         on top (e.g., via a repo or a later clean-up job).
         """
         if not jobs:
-            return
+            return {}
         
         ws = self.ensure_sheet_exists(sheet_name)
         created_at = datetime.now(timezone.utc)
         rows = [self._job_to_row(job, created_at) for job in jobs]
 
+        start_row = len(ws.col_values(1)) + 1
         # gspread's append_rows is efficiant for batch inserts
         ws.append_rows(rows, value_input_option="USER_ENTERED")
+        row_map: dict[str, int] = {}
+        for i, job in enumerate(jobs):
+            row_map[job.id] = start_row + i
+
+        return row_map
 
     def iter_jobs(self, sheet_name: str):
         """
@@ -181,18 +209,26 @@ class SheetsClient:
         Update specific columns in a row, using HEADERS to map keys → columns.
         `fields` keys must be among: "match_percent", "applied", "applied_at", "application_status_notes".
         """
-
         ws = self.ensure_sheet_exists(sheet_name)
 
         # Map header name -> column index (1-based)
-        headers = ws.row_values(1)
+        headers = self._header_cache.get(sheet_name) or ws.row_values(1)
         update = []
         for key, value in fields.items():
             if key not in headers:
                 continue
             col_idx = headers.index(key) + 1
-            update.append((row_index, col_idx, value))
+            a1 = gspread.utils.rowcol_to_a1(row_index, col_idx)
+            # update.append((row_index, col_idx, value)
 
         # Perform the updates
-        for row, col, val in update:
-            ws.update_cell(row, col, val)
+        # for row, col, val in update:
+        #     ws.update_cell(row, col, val)
+
+            update.append({
+                "range": a1,
+                "values": [[value]]
+            })
+
+        if update: 
+            ws.batch_update(update)

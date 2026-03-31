@@ -83,7 +83,7 @@ class ResultsPage(BasePage):
         return {
             "url": url,
             "title": self._safe_text(card, RESULT_TITLE),
-            "company": self._has_easy_apply(card),
+            "company": self._safe_text(card, RESULT_COMPANY),
             "easy_apply": self._has_easy_apply(card),
             "raw_company_url": self._company_url(card),
         }

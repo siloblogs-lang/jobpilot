@@ -1,5 +1,13 @@
+##### UPDATE ####
+"""
+_ Check if the job id is in the google sheets before applying.
+_ May be Verify the Apply button text is not Applied before applying
+
+python -c "from jobpilot.orchestrator.runner import JobPilotRunner; JobPilotRunner().run_once(max_results=500)"
+"""
+
 from __future__ import annotations
-import os 
+import os, time 
 from datetime import datetime, timezone
 from dataclasses import dataclass
 from typing import List
@@ -67,13 +75,44 @@ class JobPilotRunner:
             provider.login()
 
             jobs = provider.search(max_results=max_results)
+            # ------------------------------------------------------------
+            # 1) FILTER OUT JOBS ALREADY IN GOOGLE SHEETS BEFORE SAVE_JOBS
+            # ------------------------------------------------------------
+            existing_by_id = self.repo.get_existing_jobs_id(provider.NAME)
+            
+            fresh_jobs: List[JobPosting] = []
+            for job in jobs:
+                if job.id in existing_by_id:
+                    print(f"[Runner] SKIP EXISTING => {job.id}")
+                    continue
+                # existing = existing_by_id.get(job.id)
+                # if existing:
+                #     row_idx, row_values = existing
+                #     already_applied = self.repo.is_applied_row(provider.NAME, row_values)
 
+                #     if already_applied:
+                #         print(f"[Runner] SKIP EXISTING APPLIED => {job.id}")
+                #     else:
+                #         print(f"[Runner] SKIP EXISTING => {job.id}")
+
+                    # Do not append dupe rows from previous runs
+                    # continue
+
+                fresh_jobs.append(job)
+
+            jobs = fresh_jobs
+            
+            if not jobs:
+                print("[Runner] No new jobs to process after existing-sheet filter")
+                return []
+            
             resume_text = self._load_resume_text()
             matcher = JobMatcher(resume_text=resume_text)
 
-            # 1. Append scored jobs
             scored_jobs: List[JobPosting] = []
-
+            # --------------------------------------------------
+            # 2) SCORE ONLY NEW JOBS
+            # --------------------------------------------------
             for job in jobs:
                 desc = provider.get_job_description(job)
                 match_result = matcher.top_score(job, desc)
@@ -87,42 +126,82 @@ class JobPilotRunner:
 
                 scored_jobs.append(job)
 
+            # ---------------------------------------------------
+            # 3) SAVE ONLY NEW JOBS
+            # ---------------------------------------------------
             # use repo to select correct sheet and write
-            self.repo.save_jobs(provider.NAME, scored_jobs)
+            # self.repo.save_jobs(provider.NAME, scored_jobs)
+            row_map = self.repo.save_jobs(provider.NAME, scored_jobs)
 
-            # 2. Decide apply vs skip + record application status
+            # ---------------------------------------------------
+            # 4) Decide apply vs skip + record application status
+            # ---------------------------------------------------
             for job in scored_jobs:
                 match_percent = float(job.metadata.get("match_percent", 0.0))
                 recommended = bool(job.metadata.get("recommended", False))
-                print(f"[Runner] job={job.id} easy_apply={job.easy_apply} recommended={recommended} match={match_percent}")
+                print(
+                    f"[Runner] job={job.id} easy_apply={job.easy_apply} "
+                    f"recommended={recommended} match={match_percent}"
+                )
 
                 # Default: skipped, log why
                 applied = "No"
                 notes = f"Only {match_percent}% match. Match score is too low."
 
-                result = None
+                # result = None
 
                 if recommended and job.easy_apply:
                     print(f"[Runner] APPLYING => {job.id} {job.title} | {job.url}")
-                    # Call provider.apply()
+
                     result = provider.apply(job)
+
+                    print(
+                        f"[Runner] [APPLY RESULT] job={job.id} "
+                        f"status={result.status!r} notes={result.notes!r}"
+                    )
+
                     now_iso = datetime.now(timezone.utc).isoformat()
-                    
-                    applied = "Yes" if result.status == "APPLIED" else "No"
+                    status = (result.status or "").upper()
+                    notes_lower = (result.notes or "").lower()
+
+                    # Better applied mapping:
+                    # - APPLIED -> Yes
+                    # - already applied on Dice -> Yes
+                    # - confirmation miss after submit -> blank/uncertain
+                    # - everything else -> No
+                    if status == "APPLIED":
+                        applied = "Yes"
+                    elif status == "SKIPPED" and "already applied" in notes_lower:
+                        applied = "Yes"
+                    elif status == "ERROR" and "confirmation was not detected" in notes_lower:
+                        applied = ""
+                    else: 
+                        applied = "No"
+
                     notes = result.notes or f"Apply status: {result.status}"
 
-                    print("Updating sheet for", job.id, "applied=", applied)
+                    print(
+                        f"[Runner] [APPLY DECISION] job={job.id} "
+                        f"result.status={result.status!r} -> applied={applied!r}"
+                    )
+
+                    print(f"Updading sheet for {job.id} applied={applied}")
+
                     self.repo.update_job_status(
                         job,
                         match_percent=match_percent,
                         applied=applied,
                         applied_at=now_iso if applied == "Yes" else "",
                         notes=notes,
+                        row_idx=row_map.get(job.id)
                     )
-                    print("Updated sheet OK for", job.id)
-                else:
-                    print(f"[Runner] SKIP => {job.id} recommended={recommended} easy_apply={job.easy_apply}")
-                    # Not recomened (low match %) OR not Easy Apply
+                    print(f"Updated sheet OK for {job.id}")
+                    time.sleep(1.5)
+                else: 
+                    print(
+                        f"[Runner] SKIP => {job.id} recommended={recommended}"
+                        f"easy_apply={job.easy_apply}"
+                    )
                     reason = []
                     if not recommended:
                         reason.append("match below threshold")
@@ -130,13 +209,79 @@ class JobPilotRunner:
                         reason.append("Not Easy Apply")
                     notes = "; ".join(reason)
 
-                    print("Updating sheet for", job.id, "applied=", applied)
+                    print(f"Updating sheet for {job.id} applied={applied}")
+
                     self.repo.update_job_status(
-                        job, 
+                        job,
                         match_percent=match_percent,
                         applied="No",
-                        notes=notes
+                        notes=notes,
+                        row_idx=row_map.get(job.id),
                     )
+                    time.sleep(1.5)
+
+                    # Check if the job was applied for
+                #     if self.repo.was_already_applied(job.provider, job.id):
+                #         print(f"[Runner] SKIP => {job.id} already applied in sheet")
+                #         self.repo.update_job_status(
+                #             job, 
+                #             match_percent=match_percent,
+                #             applied="No",
+                #             notes="Skipped: job already marked applied in Google Sheets.",
+                #             row_idx=row_map.get(job.id)
+                #         )
+                #         time.sleep(1.5)
+                #         continue
+
+                #     print(f"[Runner] APPLYING => {job.id} {job.title} | {job.url}")
+                #     # Call provider.apply()
+                #     result = provider.apply(job)
+                #     # Status update DEBUG
+                #     print(
+                #         f"[Runner][APPLY RESULT] job={job.id} "
+                #         f"status={result.status!r} notes={result.notes!r}"
+                #     )
+                #     now_iso = datetime.now(timezone.utc).isoformat()
+                    
+                #     applied = "Yes" if result.status == "APPLIED" else "No"
+                #     notes = result.notes or f"Apply status: {result.status}"
+
+                #     # Apply status debug
+                #     print(
+                #         f"[Runner][APPLY DECISION] job={job.id} "
+                #         f"result.status={result.status!r} -> applied={applied!r}"
+                #     )
+
+                #     print("Updating sheet for", job.id, "applied=", applied)
+                    
+                #     self.repo.update_job_status(
+                #         job,
+                #         match_percent=match_percent,
+                #         applied=applied,
+                #         applied_at=now_iso if applied == "Yes" else "",
+                #         notes=notes,
+                #         row_idx=row_map.get(job.id)
+                #     )
+                #     print("Updated sheet OK for", job.id)
+                #     time.sleep(1.5)
+                # else:
+                #     print(f"[Runner] SKIP => {job.id} recommended={recommended} easy_apply={job.easy_apply}")
+                #     # Not recomened (low match %) OR not Easy Apply
+                #     reason = []
+                #     if not recommended:
+                #         reason.append("match below threshold")
+                #     if not job.easy_apply:
+                #         reason.append("Not Easy Apply")
+                #     notes = "; ".join(reason)
+
+                #     print("Updating sheet for", job.id, "applied=", applied)
+                #     self.repo.update_job_status(
+                #         job, 
+                #         match_percent=match_percent,
+                #         applied="No",
+                #         notes=notes
+                #     )
+                #     time.sleep(1.5)
             return scored_jobs
 
         finally:

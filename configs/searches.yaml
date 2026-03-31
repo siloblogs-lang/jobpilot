@@ -1,6 +1,9 @@
 dice:
-  keywords: ["QA Automation", "SDET", "Python", "Selenium"]
+  # keywords: ["QA Automation", "SDET", "Selenium", "QA lead", "Playwright", "software testing"]
+  keywords: ["python", "SQL", "developer", "software"]
   locations: ["Remote", "Tampa, FL"]
   date_posted: "last_7_days"
+  # date_posted: "last_3_days"
+  #date_posted: "today"
   easy_apply_only: true
   max_results: 500
